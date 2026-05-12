@@ -1,0 +1,21 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Excluir | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger shadow-sm">
+            <div class="card-header bg-danger text-white"><strong>Confirmar exclusão</strong></div>
+            <div class="card-body">
+                <p>Tem certeza que deseja excluir <strong>{{ object }}</strong>?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                    <a href="{{ view.success_url }}" class="btn btn-outline-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

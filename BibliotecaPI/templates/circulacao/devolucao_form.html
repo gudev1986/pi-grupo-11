@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar devolução | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning"><strong>Registrar devolução</strong></div>
+            <div class="card-body">
+                <p><strong>Empréstimo:</strong> #{{ emprestimo.id }}</p>
+                <p><strong>Exemplar:</strong> {{ emprestimo.exemplar.codigo_tombo }} — {{ emprestimo.exemplar.livro.titulo }}</p>
+                <p><strong>Usuário:</strong> {{ emprestimo.usuario.get_full_name|default:emprestimo.usuario.username }}</p>
+                <p><strong>Data do empréstimo:</strong> {{ emprestimo.data_emprestimo|date:'d/m/Y' }}</p>
+                <p><strong>Devolução prevista:</strong> {{ emprestimo.data_prevista_devolucao|date:'d/m/Y' }}</p>
+                <p><strong>Data de devolução:</strong> <span class="badge bg-secondary">Hoje</span></p>
+
+                {% if emprestimo.data_prevista_devolucao < today %}
+                <div class="alert alert-warning">
+                    ⚠️ Este empréstimo está em atraso. Uma multa será gerada automaticamente.
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Confirmar devolução</button>
+                    <a href="{% url 'circulacao:emprestimo_list' %}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

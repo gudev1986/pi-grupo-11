@@ -1,0 +1,75 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Início | BibliotecaPI{% endblock %}
+
+{% block page_header %}
+<div class="page-heading mb-4">
+    <h1 class="h3 mb-1">Painel da biblioteca</h1>
+    <p class="text-muted mb-0">Acompanhe o acervo, exemplares disponíveis e circulação ativa.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Obras no catálogo</h6>
+                <h3>{{ total_livros_catalogo }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Exemplares disponíveis</h6>
+                <h3>{{ total_exemplares_disponiveis }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Empréstimos ativos</h6>
+                <h3>{{ total_emprestimos_ativos }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Consulta do acervo</h5>
+                <p class="card-text">Busque por título, autor, ISBN e disponibilidade.</p>
+                <a class="btn btn-primary" href="{% url 'catalogo:livro_list' %}">Abrir catálogo</a>
+            </div>
+        </div>
+    </div>
+
+    {% if is_admin_or_bibliotecario %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Circulação</h5>
+                <p class="card-text">Registre empréstimos, devoluções e renovações.</p>
+                <a class="btn btn-outline-primary" href="{% url 'circulacao:emprestimo_list' %}">Gerenciar</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Administração</h5>
+                <p class="card-text">Cadastre usuários, obras, exemplares e lotes.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-dark" href="{% url 'usuarios:cadastrar_usuario' %}">Usuário</a>
+                    <a class="btn btn-outline-dark" href="{% url 'catalogo:livro_create' %}">Livro</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Circulação | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <strong>{{ form_title|default:"Formulário de circulação" }}</strong>
+            </div>
+            <div class="card-body">
+                {% if prazo_dias %}
+                <div class="alert alert-info">
+                    📅 O prazo é fixo em <strong>{{ prazo_dias }} dias</strong> a partir de hoje — a data é calculada automaticamente.
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a href="{{ view.success_url }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Trocar senha | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="alert alert-warning">Você precisa alterar a senha inicial antes de continuar.</div>
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning"><strong>Atualizar senha</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-warning">Salvar nova senha</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

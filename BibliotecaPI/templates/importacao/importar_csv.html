@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar CSV | BibliotecaPI{% endblock %}
+
+{% block page_header %}
+<div class="page-heading mb-4">
+    <h1 class="h3 mb-1">Importar livros via CSV</h1>
+    <p class="text-muted mb-0">
+        Importe livros, autores e exemplares em lote a partir de um arquivo CSV.
+    </p>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white"><strong>Upload do arquivo</strong></div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Importar</button>
+                    <a href="{% url 'importacao:template_csv' %}" class="btn btn-outline-secondary ms-2">
+                        ⬇ Baixar template CSV
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Formato esperado</strong></div>
+            <div class="card-body">
+                <p class="small text-muted">O CSV deve ter as seguintes colunas (separadas por vírgula):</p>
+                <table class="table table-sm table-bordered small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Coluna</th>
+                            <th>Obrigatório?</th>
+                            <th>Exemplo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>titulo</td><td>Sim</td><td>Dom Casmurro</td></tr>
+                        <tr><td>isbn</td><td>Não</td><td>9788544001820</td></tr>
+                        <tr><td>autor</td><td>Não</td><td>Machado de Assis</td></tr>
+                        <tr><td>editora</td><td>Não</td><td>Penguin-Companhia</td></tr>
+                        <tr><td>categoria</td><td>Não</td><td>Romance</td></tr>
+                        <tr><td>ano_publicacao</td><td>Não</td><td>1899</td></tr>
+                        <tr><td>quantidade</td><td>Não</td><td>2</td></tr>
+                    </tbody>
+                </table>
+                <p class="small text-muted mt-2">
+                    Se o ISBN já existir, o livro não será duplicado — apenas novos exemplares serão adicionados.
+                    A coluna <strong>quantidade</strong> define quantos exemplares físicos serão criados.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

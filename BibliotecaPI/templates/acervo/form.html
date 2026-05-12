@@ -1,0 +1,21 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Exemplar | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white"><strong>Formulário de exemplar</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a href="{% url 'acervo:exemplar_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

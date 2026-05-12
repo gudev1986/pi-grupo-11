@@ -1,0 +1,20 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Novo lote de entrada | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white"><strong>Novo lote de entrada de acervo</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-primary">Iniciar lote</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

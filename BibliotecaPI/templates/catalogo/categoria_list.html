@@ -1,0 +1,39 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Categorias | BibliotecaPI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="page-heading">
+        <h1 class="h3 mb-1">Categorias</h1>
+        <p class="text-muted mb-0">Classificação temática para organização do acervo.</p>
+    </div>
+    <a href="{% url 'catalogo:categoria_create' %}" class="btn btn-primary">Nova categoria</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for categoria in categorias %}
+        <tr>
+            <td>{{ categoria.nome }}</td>
+            <td>{{ categoria.descricao|default:'-'|truncatechars:80 }}</td>
+            <td class="text-end">
+                <a href="{% url 'catalogo:categoria_update' categoria.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                <a href="{% url 'catalogo:categoria_delete' categoria.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="text-center text-muted">Nenhuma categoria cadastrada.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

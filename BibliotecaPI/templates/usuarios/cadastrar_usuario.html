@@ -1,0 +1,20 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Cadastro de usuário | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white"><strong>Cadastrar usuário</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-primary">Salvar usuário</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

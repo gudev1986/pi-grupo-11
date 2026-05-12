@@ -1,0 +1,45 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Detalhe do livro | BibliotecaPI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="page-heading">
+        <h1 class="h3 mb-1">{{ livro.titulo_completo }}</h1>
+        <p class="text-muted mb-0">Detalhes bibliográficos e exemplares vinculados.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'catalogo:livro_list' %}">Voltar</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p><strong>ISBN:</strong> {{ livro.isbn }}</p>
+                <p><strong>Ano:</strong> {{ livro.ano_publicacao }}</p>
+                <p><strong>Editora:</strong> {{ livro.editora|default:'-' }}</p>
+                <p><strong>Autores:</strong> {{ livro.autores.all|join:', ' }}</p>
+                <p><strong>Categorias:</strong> {{ livro.categorias.all|join:', '|default:'-' }}</p>
+                <p><strong>Resumo:</strong><br>{{ livro.resumo|default:'Sem resumo cadastrado.' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Exemplares</strong></div>
+            <ul class="list-group list-group-flush">
+                {% for exemplar in exemplares %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>{{ exemplar.codigo_tombo }}</span>
+                        <span class="badge text-bg-secondary">{{ exemplar.get_status_display }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">Nenhum exemplar cadastrado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

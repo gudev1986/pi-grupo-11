@@ -1,0 +1,24 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Entrada de acervo | BibliotecaPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="alert alert-info">
+            <strong>NF:</strong> {{ lote.nota_fiscal }}<br>
+            <strong>Exemplares restantes:</strong> {{ restantes }}
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white"><strong>Cadastrar exemplar no lote</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-success">Salvar exemplar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
