@@ -36,24 +36,31 @@
             <th>Título</th>
             <th>Autores</th>
             <th>ISBN</th>
-            <th>Categorias</th>
+            <th>Categoria</th>
             <th>Disponíveis</th>
-            <th class="text-end">Ações</th>
+            <th class="text-end" style="min-width: 250px;">Ações</th>
         </tr>
     </thead>
     <tbody>
         {% for livro in livros %}
         <tr>
             <td>
-                <a href="{% url 'catalogo:livro_detail' livro.pk %}">{{ livro.titulo_completo }}</a>
+                <a href="{% url 'catalogo:livro_detail' livro.pk %}">{{ livro.titulo }}</a>
             </td>
             <td>{{ livro.autores.all|join:', ' }}</td>
-            <td>{{ livro.isbn }}</td>
-            <td>{{ livro.categorias.all|join:', '|default:'-' }}</td>
+            <td>
+                {% if livro.isbn_10 %}ISBN-10: {{ livro.isbn_10 }}<br>{% endif %}
+                {% if livro.isbn_13 %}ISBN-13: {{ livro.isbn_13 }}{% endif %}
+            </td>
+            <td>{{ livro.categoria.nome|default:'-' }}</td>
             <td>{{ livro.exemplares_disponiveis }}/{{ livro.total_exemplares }}</td>
             <td class="text-end">
                 <a href="{% url 'catalogo:livro_detail' livro.pk %}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
                 {% if is_admin_or_bibliotecario %}
+                    <form method="post" action="{% url 'catalogo:livro_adicionar_exemplar' livro.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-success">Cadastrar Exemplar</button>
+                    </form>
                     <a href="{% url 'catalogo:livro_update' livro.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                     <a href="{% url 'catalogo:livro_delete' livro.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                 {% endif %}

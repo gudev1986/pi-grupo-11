@@ -43,7 +43,8 @@ def importar_csv(request):
             for numero_linha, linha in enumerate(reader, start=2):
                 try:
                     titulo = linha.get('titulo', '').strip()
-                    isbn = linha.get('isbn', '').strip()
+                    isbn_10 = linha.get('isbn_10', '').strip()
+                    isbn_13 = linha.get('isbn_13', '').strip()
                     nome_autor = linha.get('autor', '').strip()
                     nome_categoria = linha.get('categoria', '').strip()
                     nome_editora = linha.get('editora', '').strip()
@@ -75,16 +76,26 @@ def importar_csv(request):
                             erros.append(f'Linha {numero_linha}: ano_publicacao inválido ("{ano_str}"). Ignorado.')
 
                     # Cria ou recupera o livro
-                    if isbn:
-                        livro, criado = Livro.objects.get_or_create(
-                            isbn=isbn,
-                            defaults={
-                                'titulo': titulo,
-                                'editora': editora,
-                                'categoria': categoria,
-                                'ano_publicacao': ano_publicacao,
-                            }
-                        )
+                    if isbn_10 or isbn_13:
+                        livro_qs = Livro.objects.none()
+                        if isbn_10:
+                            livro_qs = Livro.objects.filter(isbn_10=isbn_10)
+                        if isbn_13 and not livro_qs.exists():
+                            livro_qs = Livro.objects.filter(isbn_13=isbn_13)
+
+                        if livro_qs.exists():
+                            livro = livro_qs.first()
+                            criado = False
+                        else:
+                            livro = Livro.objects.create(
+                                titulo=titulo,
+                                isbn_10=isbn_10 if isbn_10 else None,
+                                isbn_13=isbn_13 if isbn_13 else None,
+                                editora=editora,
+                                categoria=categoria,
+                                ano_publicacao=ano_publicacao,
+                            )
+                            criado = True
                     else:
                         # Sem ISBN: cria sempre (ou busca por título exato)
                         livro, criado = Livro.objects.get_or_create(
@@ -150,9 +161,9 @@ def download_template_csv(request):
     response.write('\ufeff')  # BOM para Excel abrir corretamente
 
     writer = csv.writer(response)
-    writer.writerow(['titulo', 'isbn', 'autor', 'editora', 'categoria', 'ano_publicacao', 'quantidade'])
-    writer.writerow(['Dom Casmurro', '9788544001820', 'Machado de Assis', 'Penguin-Companhia', 'Romance', '1899', '2'])
-    writer.writerow(['O Cortiço', '9788572326995', 'Aluísio Azevedo', 'Ática', 'Romance', '1890', '1'])
-    writer.writerow(['Memórias Póstumas de Brás Cubas', '', 'Machado de Assis', 'Nova Fronteira', 'Romance', '1881', '3'])
+    writer.writerow(['titulo', 'isbn_10', 'isbn_13', 'autor', 'editora', 'categoria', 'ano_publicacao', 'quantidade'])
+    writer.writerow(['Dom Casmurro', '8544001824', '9788544001820', 'Machado de Assis', 'Penguin-Companhia', 'Romance', '1899', '2'])
+    writer.writerow(['O Cortiço', '8572326992', '9788572326995', 'Aluísio Azevedo', 'Ática', 'Romance', '1890', '1'])
+    writer.writerow(['Memórias Póstumas de Brás Cubas', '', '', 'Machado de Assis', 'Nova Fronteira', 'Romance', '1881', '3'])
 
     return response

@@ -26,10 +26,18 @@ class Categoria(models.Model):
 class Livro(models.Model):
     titulo = models.CharField(max_length=220)
 
-    isbn = models.CharField(
-        max_length=17,
+    isbn_10 = models.CharField(
+        max_length=10,
         unique=True,
         blank=True,
+        null=True,
+    )
+
+    isbn_13 = models.CharField(
+        max_length=13,
+        unique=True,
+        blank=True,
+        null=True,
     )
 
     autores = models.ManyToManyField(

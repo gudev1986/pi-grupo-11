@@ -2,6 +2,8 @@ from django import forms
 from django.utils import timezone
 
 from apps.acervo.models import Exemplar
+from apps.catalogo.models import Livro
+from django.db.models import Q
 
 from .models import Emprestimo, Reserva
 
@@ -14,6 +16,11 @@ class EmprestimoForm(forms.ModelForm):
     Formulário de empréstimo simplificado.
     A data de devolução é calculada automaticamente como hoje + 7 dias.
     """
+    exemplar = forms.ModelChoiceField(
+        queryset=Exemplar.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-select', 'data-placeholder': 'Selecione um exemplar'})
+    )
+
     class Meta:
         model = Emprestimo
         fields = ['exemplar', 'usuario']
@@ -24,6 +31,7 @@ class EmprestimoForm(forms.ModelForm):
             Exemplar.objects.filter(status=Exemplar.Status.DISPONIVEL)
             .select_related('livro')
         )
+        self.fields['exemplar'].label_from_instance = lambda obj: f"{obj.livro.titulo} - Tombo: {obj.codigo_tombo}"
         for field in self.fields.values():
             if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
                 field.widget.attrs.setdefault('class', 'form-select')
@@ -40,6 +48,17 @@ class EmprestimoForm(forms.ModelForm):
         return instance
 
 
+class ReservaBuscaForm(forms.Form):
+    q = forms.CharField(required=False, label='Palavra-chave no Título', widget=forms.TextInput(attrs={'placeholder': 'Ex: Dom Casmurro'}))
+    autor = forms.CharField(required=False, label='Autor', widget=forms.TextInput(attrs={'placeholder': 'Ex: Machado de Assis'}))
+    isbn = forms.CharField(required=False, label='ISBN (10 ou 13)', widget=forms.TextInput(attrs={'placeholder': 'Ex: 9788544001820'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.setdefault('class', 'form-control')
+
+
 class ReservaForm(forms.ModelForm):
     """
     Formulário de reserva simplificado.
@@ -51,6 +70,8 @@ class ReservaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Select2 attributes para a busca ajax ou busca no próprio form
+        self.fields['livro'].widget.attrs.update({'data-placeholder': 'Busque e selecione o livro'})
         for field in self.fields.values():
             if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
                 field.widget.attrs.setdefault('class', 'form-select')

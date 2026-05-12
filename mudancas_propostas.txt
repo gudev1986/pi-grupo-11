@@ -1,0 +1,32 @@
+Guia Catálogo
+
+Na tabela é possível observar que para os livros catalogados o campo título está em branco, possivelmente a catalogação em lote com o arquivo excel não importou o título da obra, é necessário corrigir
+
+No botão "novo livro" no formulário de cadastro aparece a lista de autores, não sendo possível cadastrar algum autor novo caso seja necessário, seria bom ter essa disponibilidade, vamos corrigir para que isso seja possível
+
+No botão "novo livro" no formulário de cadastro aparece a lista das editoras, não sendo possível cadastrar alguma editora nova caso seja necessário, seria bom ter essa disponibilidade
+
+No formulário de cadastro também não é possível fazer a busca do autor ou da editora, a lista disponível está fora de uma ordem alfabética, vamos corrigir isso adicionando um campo para digitar os nomes, e caso não esteja disponível que tenha um botão para realizar os cadastros do autor e da editora, sem perder informações já digitadas no formulário 
+
+Vamos adicionar também o campo de quantidade de exemplares a ser cadastrado, o sistema deve atribuir um número de tombo para cada exemplar
+
+Caso já exista uma obra com o mesmo nome o sistema deve informar se o usuário deseja incluir mais exemplares daquela amostra no estoque, por exemplo na guia catálogo além dos botões "detalhes" "editar" excluir", vamos adicionar o botão "cadastrar", para incluir mais exemplares no acervo
+
+Incluir os campos isbn-10 e isbn-13, pois existe uma diferenciação em relação a eles
+
+Guia Reservas
+
+Ao abri o formulário o usuário precisa abris a lista de exemplares no sistema, precisamos criar um campo com a busca por palavra chave para o título, um campo com a busca pelo autor da obra e caso o usuário tenha o isbn-10 ou isbn-13 que ele possa buscar por esses dados também, podendo utilizar apenas um campo para busca ou a combinação de 2 ou mais campos para refinamento
+
+Guia exemplares
+Na guia exemplares existe uma tabela com o cadastro de todos os exemplares, eles não estão em ordem alfabética e estão listados conforme o seu número de tombo, isso gera uma tabela enorme a massiva, vamos criar um campo para busca de exemplares que traz uma tabela com o Título e a quantidade de exemplares disponíveis, reservando as informações de tombo para outro tipo de tabela de controle
+
+Guia empréstimos
+Na guia empréstimos temos uma tabela vazia, mesmo depois de reservado no painel, não aparece uma lista na guia mostrando os itens já reservados, o campo exemplar mostra a lista de tombo e não permite pesquisar, precisamos verificar se é necessária a existência desta guia, pois já temos a guia de reservas
+
+
+cd BibliotecaPI
+python manage.py makemigrations
+python manage.py migrate
+
+

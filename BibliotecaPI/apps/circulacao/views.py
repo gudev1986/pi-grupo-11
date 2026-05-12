@@ -12,12 +12,14 @@ from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, ListView
 
 from apps.acervo.models import Exemplar
+from apps.catalogo.models import Livro
 from apps.usuarios.constants import ROLE_ADMIN
 from apps.usuarios.permissions import AdminRequiredMixin
 from apps.usuarios.utils import user_has_any_role
 
-from .forms import DevolucaoForm, EmprestimoForm, ReservaForm
+from .forms import DevolucaoForm, EmprestimoForm, ReservaForm, ReservaBuscaForm
 from .models import Emprestimo, Multa, Reserva
+from django.db.models import Q
 
 PRAZO_EMPRESTIMO_DIAS = 7
 PRAZO_RESERVA_DIAS = 3
@@ -78,14 +80,39 @@ class ReservaListView(LoginRequiredMixin, ListView):
 class ReservaCreateView(LoginRequiredMixin, CreateView):
     model = Reserva
     form_class = ReservaForm
-    template_name = 'circulacao/form.html'
+    template_name = 'circulacao/reserva_form.html'
     success_url = reverse_lazy('circulacao:reserva_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form_title'] = 'Nova Reserva'
         context['prazo_dias'] = PRAZO_RESERVA_DIAS
+
+        busca_form = ReservaBuscaForm(self.request.GET or None)
+        context['busca_form'] = busca_form
+
         return context
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Filtra os livros caso haja busca
+        busca_form = ReservaBuscaForm(self.request.GET or None)
+        queryset = Livro.objects.all()
+        if busca_form.is_valid():
+            q = busca_form.cleaned_data.get('q')
+            autor = busca_form.cleaned_data.get('autor')
+            isbn = busca_form.cleaned_data.get('isbn')
+
+            if q:
+                queryset = queryset.filter(titulo__icontains=q)
+            if autor:
+                queryset = queryset.filter(autores__nome__icontains=autor)
+            if isbn:
+                queryset = queryset.filter(
+                    Q(isbn_10__icontains=isbn) | Q(isbn_13__icontains=isbn)
+                )
+        form.fields['livro'].queryset = queryset
+        return form
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user

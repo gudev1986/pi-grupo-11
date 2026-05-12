@@ -45,11 +45,20 @@ class CategoriaForm(BootstrapFormMixin, forms.ModelForm):
 
 
 class LivroForm(BootstrapFormMixin, forms.ModelForm):
+    quantidade_exemplares = forms.IntegerField(
+        min_value=1,
+        initial=1,
+        label='Quantidade de Exemplares',
+        help_text='Quantos exemplares deste livro estão sendo adicionados ao acervo?'
+    )
+
     class Meta:
         model = Livro
         fields = [
             'titulo',
-            'isbn',
+            'isbn_10',
+            'isbn_13',
+            'categoria',
             'ano_publicacao',
             'autores',
             'editora',
@@ -60,13 +69,17 @@ class LivroForm(BootstrapFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Ordenar os choices
+        self.fields['autores'].queryset = Autor.objects.order_by('nome')
+        self.fields['editora'].queryset = Editora.objects.order_by('nome')
+        self.fields['categoria'].queryset = Categoria.objects.order_by('nome')
         self._apply_bootstrap()
 
 
 class BuscaAcervoForm(forms.Form):
     q = forms.CharField(required=False, label='Título', widget=forms.TextInput(attrs={'placeholder': 'Buscar por título'}))
     autor = forms.CharField(required=False, label='Autor', widget=forms.TextInput(attrs={'placeholder': 'Nome do autor'}))
-    isbn = forms.CharField(required=False, label='ISBN')
+    isbn = forms.CharField(required=False, label='ISBN (10 ou 13)')
     categoria = forms.ModelChoiceField(queryset=Categoria.objects.none(), required=False, empty_label='Todas')
     disponivel = forms.BooleanField(required=False, label='Somente disponíveis')
 

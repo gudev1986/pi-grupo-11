@@ -1,8 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Q
-from django.urls import reverse_lazy
+from django.shortcuts import redirect
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.utils import timezone
 
 from apps.acervo.models import Exemplar
 from apps.usuarios.permissions import AdminOrBibliotecarioRequiredMixin
@@ -19,6 +21,13 @@ class FormTitleMixin:
         context['form_title'] = self.form_title or self.model._meta.verbose_name.title()
         return context
 
+class SuccessUrlMixin:
+    def get_success_url(self):
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return next_url
+        return super().get_success_url()
+
 
 class AutorListView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, ListView):
     model = Autor
@@ -26,7 +35,7 @@ class AutorListView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, ListV
     context_object_name = 'autores'
 
 
-class AutorCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, CreateView):
+class AutorCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, SuccessUrlMixin, CreateView):
     model = Autor
     form_class = AutorForm
     template_name = 'catalogo/form.html'
@@ -57,7 +66,7 @@ class EditoraListView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, Lis
     context_object_name = 'editoras'
 
 
-class EditoraCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, CreateView):
+class EditoraCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, SuccessUrlMixin, CreateView):
     model = Editora
     form_class = EditoraForm
     template_name = 'catalogo/form.html'
@@ -88,7 +97,7 @@ class CategoriaListView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, L
     context_object_name = 'categorias'
 
 
-class CategoriaCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, CreateView):
+class CategoriaCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, SuccessUrlMixin, CreateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = 'catalogo/form.html'
@@ -146,7 +155,9 @@ class LivroListView(LoginRequiredMixin, ListView):
             if autor:
                 queryset = queryset.filter(autores__nome__icontains=autor)
             if isbn:
-                queryset = queryset.filter(isbn__icontains=isbn)
+                queryset = queryset.filter(
+                    Q(isbn_10__icontains=isbn) | Q(isbn_13__icontains=isbn)
+                )
             if categoria:
                 queryset = queryset.filter(categoria=categoria)
             if disponivel:
@@ -182,6 +193,19 @@ class LivroCreateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, For
     form_title = 'Livro'
     success_message = 'Livro cadastrado com sucesso.'
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        quantidade = form.cleaned_data.get('quantidade_exemplares', 1)
+        
+        # Criar os exemplares
+        livro = self.object
+        ts = timezone.now().strftime('%Y%m%d%H%M%S%f')
+        for i in range(quantidade):
+            codigo_tombo = f"{livro.id}-{ts}-{i}"
+            Exemplar.objects.create(livro=livro, codigo_tombo=codigo_tombo)
+            
+        return response
+
 
 class LivroUpdateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, FormTitleMixin, SuccessMessageMixin, UpdateView):
     model = Livro
@@ -191,9 +215,27 @@ class LivroUpdateView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, For
     form_title = 'Livro'
     success_message = 'Livro atualizado com sucesso.'
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Ao editar o livro não faz sentido adicionar exemplares por aqui
+        # Pode ter um botão de "adicionar exemplar" separado
+        if 'quantidade_exemplares' in form.fields:
+            del form.fields['quantidade_exemplares']
+        return form
+
 
 class LivroDeleteView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, SuccessMessageMixin, DeleteView):
     model = Livro
     template_name = 'catalogo/confirm_delete.html'
     success_url = reverse_lazy('catalogo:livro_list')
     success_message = 'Livro excluído com sucesso.'
+
+class AdicionarExemplarView(LoginRequiredMixin, AdminOrBibliotecarioRequiredMixin, DetailView):
+    model = Livro
+
+    def post(self, request, *args, **kwargs):
+        livro = self.get_object()
+        ts = timezone.now().strftime('%Y%m%d%H%M%S%f')
+        codigo_tombo = f"{livro.id}-{ts}"
+        Exemplar.objects.create(livro=livro, codigo_tombo=codigo_tombo)
+        return redirect('catalogo:livro_list')

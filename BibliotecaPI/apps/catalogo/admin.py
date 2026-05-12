@@ -22,6 +22,6 @@ class EditoraAdmin(admin.ModelAdmin):
 
 @admin.register(Livro)
 class LivroAdmin(admin.ModelAdmin):
-    list_display = ['titulo', 'isbn', 'editora', 'ano_publicacao']
-    search_fields = ['titulo', 'isbn']
+    list_display = ['titulo', 'isbn_10', 'isbn_13', 'editora', 'ano_publicacao']
+    search_fields = ['titulo', 'isbn_10', 'isbn_13']
     filter_horizontal = ['autores']

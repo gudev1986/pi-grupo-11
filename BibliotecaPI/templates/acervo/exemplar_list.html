@@ -13,6 +13,18 @@
 {% endblock %}
 
 {% block content %}
+<form method="get" class="card card-body shadow-sm mb-3">
+    <div class="row g-2">
+        <div class="col-md-8">
+            <input type="text" name="q" class="form-control" placeholder="Buscar por título do livro..." value="{{ q }}">
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a href="{% url 'acervo:exemplar_list' %}" class="btn btn-outline-secondary">Limpar</a>
+        </div>
+    </div>
+</form>
+
 <div class="table-responsive">
 <table class="table table-striped table-hover">
     <thead>
@@ -20,8 +32,6 @@
             <th>Tombo</th>
             <th>Livro</th>
             <th>Status</th>
-            <th>Localização</th>
-            <th>Lote</th>
             <th class="text-end">Ações</th>
         </tr>
     </thead>
@@ -31,17 +41,29 @@
             <td>{{ exemplar.codigo_tombo }}</td>
             <td>{{ exemplar.livro.titulo }}</td>
             <td><span class="badge text-bg-secondary">{{ exemplar.get_status_display }}</span></td>
-            <td>{{ exemplar.localizacao_fisica }}</td>
-            <td>{{ exemplar.lote_cadastro.nota_fiscal|default:'-' }}</td>
             <td class="text-end">
                 <a href="{% url 'acervo:exemplar_update' exemplar.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                 <a href="{% url 'acervo:exemplar_delete' exemplar.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="text-center text-muted">Nenhum exemplar cadastrado.</td></tr>
+        <tr><td colspan="4" class="text-center text-muted">Nenhum exemplar cadastrado.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 </div>
+
+{% if is_paginated %}
+<nav aria-label="Paginação">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?{% if q %}q={{ q }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

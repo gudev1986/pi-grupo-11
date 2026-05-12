@@ -6,7 +6,16 @@
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
-            <div class="card-header bg-secondary text-white"><strong>{{ form_title }}</strong></div>
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <strong>{{ form_title }}</strong>
+                {% if form_title == 'Livro' %}
+                <div>
+                    <a href="{% url 'catalogo:autor_create' %}?next={{ request.path }}" class="btn btn-sm btn-light me-1">Novo Autor</a>
+                    <a href="{% url 'catalogo:editora_create' %}?next={{ request.path }}" class="btn btn-sm btn-light me-1">Nova Editora</a>
+                    <a href="{% url 'catalogo:categoria_create' %}?next={{ request.path }}" class="btn btn-sm btn-light">Nova Categoria</a>
+                </div>
+                {% endif %}
+            </div>
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -18,4 +27,18 @@
         </div>
     </div>
 </div>
+
+<!-- Select2 integration for searchable select inputs -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('select').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+    });
+</script>
 {% endblock %}
