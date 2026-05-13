@@ -1,18 +1,28 @@
 {% extends 'base.html' %}
 
-{% block title %}Novo Empréstimo | BibliotecaPI{% endblock %}
+{% block title %}Novo emprestimo | BibliotecaPI{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-7">
         <div class="card shadow-sm">
             <div class="card-header bg-secondary text-white">
-                <strong>{{ form_title|default:"Novo Empréstimo" }}</strong>
+                <strong>{{ form_title|default:"Novo emprestimo" }}</strong>
             </div>
             <div class="card-body">
                 {% if prazo_dias %}
                 <div class="alert alert-info">
-                    📅 O prazo de devolução é fixo em <strong>{{ prazo_dias }} dias</strong> a partir de hoje — a data é calculada automaticamente.
+                    O prazo de devolucao e fixo em <strong>{{ prazo_dias }} dias</strong> a partir de hoje.
+                </div>
+                {% endif %}
+
+                {% if reserva_origem %}
+                <div class="alert alert-primary">
+                    <div><strong>Protocolo:</strong> {{ reserva_origem.protocolo }}</div>
+                    <div><strong>Usuario:</strong> {{ reserva_origem.usuario.get_full_name|default:reserva_origem.usuario.username }}</div>
+                    <div><strong>Livro:</strong> {{ reserva_origem.livro.titulo }}</div>
+                    <div><strong>Exemplar separado:</strong> {{ reserva_origem.exemplar.codigo_tombo }}</div>
+                    <div><strong>Retirada ate:</strong> {{ reserva_origem.data_expiracao|date:'d/m/Y'|default:'-' }}</div>
                 </div>
                 {% endif %}
 
@@ -27,51 +37,42 @@
                         </div>
                     {% endif %}
 
-                    {% for field in form %}
-                        <div class="mb-3">
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-
-                            {% if field.name == 'exemplar' %}
-                                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select select2-exemplares" required>
-                                    {% if field.value %}
-                                        <option value="{{ field.value }}" selected>{{ field.field.queryset.get.codigo_tombo }} - {{ field.field.queryset.get.livro.titulo }}</option>
-                                    {% endif %}
-                                </select>
-                            {% elif field.name == 'usuario' %}
-                                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select select2-usuarios" required>
-                                    {% if field.value %}
-                                        <option value="{{ field.value }}" selected>{{ field.field.queryset.get.username }}</option>
-                                    {% endif %}
-                                </select>
-                            {% else %}
-                                {{ field }}
-                            {% endif %}
-
-                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                            {% for error in field.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                            {% endfor %}
-                        </div>
+                    {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
                     {% endfor %}
 
-                    <button type="submit" class="btn btn-primary">Registrar Empréstimo</button>
-                    <a href="{{ view.success_url }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+                    {% if not reserva_origem %}
+                        {% for field in form.visible_fields %}
+                            <div class="mb-3">
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary">Registrar emprestimo</button>
+                    <a href="{{ cancel_url }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+{% if not reserva_origem %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('.select2-exemplares').select2({
+        $('#id_exemplar').select2({
             theme: 'bootstrap-5',
             width: '100%',
-            placeholder: 'Digite título do livro ou código do tombo...',
+            placeholder: 'Digite titulo do livro ou codigo do tombo...',
             minimumInputLength: 2,
             ajax: {
                 url: '{% url "circulacao:api_buscar_exemplares" %}',
@@ -87,7 +88,7 @@
             }
         });
 
-        $('.select2-usuarios').select2({
+        $('#id_usuario').select2({
             theme: 'bootstrap-5',
             width: '100%',
             placeholder: 'Digite nome, username ou e-mail...',
@@ -107,4 +108,5 @@
         });
     });
 </script>
+{% endif %}
 {% endblock %}

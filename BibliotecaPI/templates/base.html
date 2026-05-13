@@ -13,23 +13,23 @@
     <div class="container">
         <a class="navbar-brand d-flex flex-column lh-sm" href="{% url 'home' %}">
             <span>Biblioteca PI</span>
-            <small>Gestão de acervo</small>
+            <small>Gestao de acervo</small>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav" aria-controls="menuNav" aria-expanded="false" aria-label="Alternar navegação">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNav" aria-controls="menuNav" aria-expanded="false" aria-label="Alternar navegacao">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="menuNav">
             {% if user.is_authenticated %}
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'catalogo:livro_list' %}">Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'catalogo:livro_list' %}">Catalogo</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'circulacao:reserva_list' %}">Reservas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'circulacao:emprestimo_list' %}">Emprestimos</a></li>
                     {% if is_admin %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'acervo:exemplar_list' %}">Exemplares</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'circulacao:emprestimo_list' %}">Empréstimos</a></li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Administração</a>
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Administracao</a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'usuarios:cadastrar_usuario' %}">Cadastrar usuário</a></li>
+                                <li><a class="dropdown-item" href="{% url 'usuarios:cadastrar_usuario' %}">Cadastrar usuario</a></li>
                                 <li><a class="dropdown-item" href="{% url 'catalogo:autor_list' %}">Autores</a></li>
                                 <li><a class="dropdown-item" href="{% url 'catalogo:editora_list' %}">Editoras</a></li>
                                 <li><a class="dropdown-item" href="{% url 'catalogo:categoria_list' %}">Categorias</a></li>

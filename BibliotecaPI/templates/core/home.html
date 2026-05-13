@@ -1,11 +1,11 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
-{% block title %}Início | BibliotecaPI{% endblock %}
+{% block title %}Inicio | BibliotecaPI{% endblock %}
 
 {% block page_header %}
 <div class="page-heading mb-4">
     <h1 class="h3 mb-1">Painel da biblioteca</h1>
-    <p class="text-muted mb-0">Acompanhe o acervo, exemplares disponíveis e circulação ativa.</p>
+    <p class="text-muted mb-0">Acompanhe o acervo, a circulacao ativa e os fluxos de retirada.</p>
 </div>
 {% endblock %}
 
@@ -14,7 +14,7 @@
     <div class="col-md-4">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Obras no catálogo</h6>
+                <h6 class="text-muted">Obras no catalogo</h6>
                 <h3>{{ total_livros_catalogo }}</h3>
             </div>
         </div>
@@ -22,7 +22,7 @@
     <div class="col-md-4">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Exemplares disponíveis</h6>
+                <h6 class="text-muted">Exemplares disponiveis</h6>
                 <h3>{{ total_exemplares_disponiveis }}</h3>
             </div>
         </div>
@@ -30,7 +30,7 @@
     <div class="col-md-4">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h6 class="text-muted">Empréstimos ativos</h6>
+                <h6 class="text-muted">Emprestimos ativos</h6>
                 <h3>{{ total_emprestimos_ativos }}</h3>
             </div>
         </div>
@@ -41,9 +41,27 @@
     <div class="col-md-4">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">Consulta do acervo</h5>
-                <p class="card-text">Busque por título, autor, ISBN e disponibilidade.</p>
-                <a class="btn btn-primary" href="{% url 'catalogo:livro_list' %}">Abrir catálogo</a>
+                <h5 class="card-title">Catalogo</h5>
+                <p class="card-text">Consulte obras, disponibilidade e detalhes bibliograficos.</p>
+                <a class="btn btn-primary" href="{% url 'catalogo:livro_list' %}">Abrir catalogo</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Reservas</h5>
+                <p class="card-text">Entre na fila quando a obra estiver emprestada e acompanhe a retirada.</p>
+                <a class="btn btn-outline-primary" href="{% url 'circulacao:reserva_list' %}">Abrir reservas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Emprestimos</h5>
+                <p class="card-text">Solicite a retirada de obras disponiveis e acompanhe seus protocolos.</p>
+                <a class="btn btn-outline-primary" href="{% url 'circulacao:emprestimo_list' %}">Abrir emprestimos</a>
             </div>
         </div>
     </div>
@@ -52,20 +70,23 @@
     <div class="col-md-4">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">Circulação</h5>
-                <p class="card-text">Registre empréstimos, devoluções e renovações.</p>
-                <a class="btn btn-outline-primary" href="{% url 'circulacao:emprestimo_list' %}">Gerenciar</a>
+                <h5 class="card-title">Exemplares</h5>
+                <p class="card-text">Acompanhe os itens fisicos e o status de cada tombo.</p>
+                <a class="btn btn-outline-dark" href="{% url 'acervo:exemplar_list' %}">Gerenciar exemplares</a>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-8">
         <div class="card h-100 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">Administração</h5>
-                <p class="card-text">Cadastre usuários, obras, exemplares e lotes.</p>
+                <h5 class="card-title">Administracao</h5>
+                <p class="card-text">Cadastre usuarios, autores, editoras, categorias e importe dados em lote.</p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-outline-dark" href="{% url 'usuarios:cadastrar_usuario' %}">Usuário</a>
-                    <a class="btn btn-outline-dark" href="{% url 'catalogo:livro_create' %}">Livro</a>
+                    <a class="btn btn-outline-dark" href="{% url 'usuarios:cadastrar_usuario' %}">Usuarios</a>
+                    <a class="btn btn-outline-dark" href="{% url 'catalogo:autor_list' %}">Autores</a>
+                    <a class="btn btn-outline-dark" href="{% url 'catalogo:editora_list' %}">Editoras</a>
+                    <a class="btn btn-outline-dark" href="{% url 'catalogo:categoria_list' %}">Categorias</a>
+                    <a class="btn btn-outline-dark" href="{% url 'importacao:importar_csv' %}">Importar CSV</a>
                 </div>
             </div>
         </div>

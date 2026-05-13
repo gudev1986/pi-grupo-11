@@ -7,10 +7,12 @@ app_name = 'circulacao'
 urlpatterns = [
     path('emprestimos/', views.EmprestimoListView.as_view(), name='emprestimo_list'),
     path('emprestimos/novo/', views.EmprestimoCreateView.as_view(), name='emprestimo_create'),
+    path('emprestimos/solicitar/<int:livro_id>/', views.solicitar_emprestimo, name='solicitar_emprestimo'),
     path('emprestimos/<int:pk>/devolver/', views.registrar_devolucao, name='registrar_devolucao'),
     path('emprestimos/<int:pk>/renovar/', views.renovar_emprestimo, name='renovar_emprestimo'),
     path('reservas/', views.ReservaListView.as_view(), name='reserva_list'),
     path('reservas/nova/', views.ReservaCreateView.as_view(), name='reserva_create'),
+    path('reservas/solicitar/<int:livro_id>/', views.solicitar_reserva, name='solicitar_reserva'),
 
     # Endpoints de API para as buscas dinâmicas
     path('api/livros/', views.api_buscar_livros, name='api_buscar_livros'),

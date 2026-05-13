@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Reservas | BibliotecaPI{% endblock %}
 
@@ -6,39 +6,164 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="page-heading">
         <h1 class="h3 mb-1">Reservas</h1>
-        <p class="text-muted mb-0">Acompanhamento de solicitações de obras do catálogo.</p>
+        {% if is_admin_view %}
+            <p class="text-muted mb-0">Fila ativa de obras aguardando retirada e atendimento.</p>
+        {% else %}
+            <p class="text-muted mb-0">Reserve apenas obras sem disponibilidade imediata para emprestimo.</p>
+        {% endif %}
     </div>
-    <a href="{% url 'circulacao:reserva_create' %}" class="btn btn-primary">Nova reserva</a>
+    {% if is_admin %}
+        <a href="{% url 'circulacao:emprestimo_list' %}" class="btn btn-outline-secondary">Ver emprestimos</a>
+    {% else %}
+        <a href="{% url 'circulacao:reserva_create' %}" class="btn btn-primary">Nova reserva</a>
+    {% endif %}
 </div>
 {% endblock %}
 
 {% block content %}
+{% if is_admin_view %}
 <div class="table-responsive">
-<table class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Livro</th>
-            <th>Usuário</th>
-            <th>Data</th>
-            <th>Expiração</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in reservas %}
-        <tr>
-            <td>#{{ item.id }}</td>
-            <td>{{ item.livro.titulo }}</td>
-            <td>{{ item.usuario.username }}</td>
-            <td>{{ item.data_reserva|date:'d/m/Y' }}</td>
-            <td>{{ item.data_expiracao|date:'d/m/Y'|default:'-' }}</td>
-            <td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="6" class="text-center text-muted">Nenhuma reserva registrada.</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Protocolo</th>
+                <th>Livro</th>
+                <th>Usuario</th>
+                <th>Tipo</th>
+                <th>Data</th>
+                <th>Retirada ate</th>
+                <th>Exemplar</th>
+                <th>Proxima devolucao</th>
+                <th>Status</th>
+                <th class="text-end">Acao</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in reservas %}
+            <tr>
+                <td>{{ item.protocolo }}</td>
+                <td>{{ item.livro.titulo }}</td>
+                <td>{{ item.usuario.username }}</td>
+                <td>{{ item.get_tipo_display }}</td>
+                <td>{{ item.data_reserva|date:'d/m/Y' }}</td>
+                <td>{{ item.data_expiracao|date:'d/m/Y'|default:'-' }}</td>
+                <td>{{ item.exemplar.codigo_tombo|default:'-' }}</td>
+                <td>{{ item.proxima_devolucao|date:'d/m/Y'|default:'-' }}</td>
+                <td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td>
+                <td class="text-end">
+                    {% if item.exemplar_id %}
+                        <a href="{% url 'circulacao:emprestimo_create' %}?reserva={{ item.id }}&next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-outline-primary">Abrir emprestimo</a>
+                    {% else %}
+                        <span class="text-muted small">Aguardando exemplar</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="10" class="text-center text-muted">Nenhuma reserva ativa no momento.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
+{% else %}
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+                <div>
+                    <h5 class="mb-1">Buscar obra para reservar</h5>
+                    <p class="text-muted mb-0">Use a busca por titulo, autor ou ISBN para registrar uma reserva manualmente.</p>
+                </div>
+                <div>
+                    <a href="{% url 'circulacao:reserva_create' %}" class="btn btn-outline-primary">Pesquisar e criar reserva</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Obras emprestadas sem disponibilidade</strong></div>
+            <div class="card-body p-0">
+                <div class="table-responsive mb-0">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Titulo</th>
+                                <th>Autores</th>
+                                <th>Categoria</th>
+                                <th>Emprestados</th>
+                                <th>Proxima devolucao</th>
+                                <th>Fila atual</th>
+                                <th class="text-end">Acao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for livro in livros_indisponiveis %}
+                            <tr>
+                                <td>{{ livro.titulo }}</td>
+                                <td>{{ livro.autores.all|join:', ' }}</td>
+                                <td>{{ livro.categoria|default:'-' }}</td>
+                                <td>{{ livro.emprestimos_ativos }}</td>
+                                <td>{{ livro.proxima_devolucao|date:'d/m/Y'|default:'-' }}</td>
+                                <td>{{ livro.fila_ativa }}</td>
+                                <td class="text-end">
+                                    {% if livro.id in livros_com_solicitacao_ativa %}
+                                        <span class="text-muted small">Solicitacao ativa</span>
+                                    {% else %}
+                                        <form method="post" action="{% url 'circulacao:solicitar_reserva' livro.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Entrar na fila</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center text-muted">Nenhuma obra indisponivel para reserva no momento.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Minhas reservas</strong></div>
+            <div class="card-body p-0">
+                <div class="table-responsive mb-0">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Protocolo</th>
+                                <th>Livro</th>
+                                <th>Tipo</th>
+                                <th>Solicitacao</th>
+                                <th>Retirada ate</th>
+                                <th>Exemplar</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in reservas %}
+                            <tr>
+                                <td>{{ item.protocolo }}</td>
+                                <td>{{ item.livro.titulo }}</td>
+                                <td>{{ item.get_tipo_display }}</td>
+                                <td>{{ item.data_reserva|date:'d/m/Y' }}</td>
+                                <td>{{ item.data_expiracao|date:'d/m/Y'|default:'-' }}</td>
+                                <td>{{ item.exemplar.codigo_tombo|default:'-' }}</td>
+                                <td><span class="badge text-bg-secondary">{{ item.get_status_display }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="text-center text-muted">Voce ainda nao possui reservas registradas.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -5,6 +5,7 @@ class Exemplar(models.Model):
 
     class Status(models.TextChoices):
         DISPONIVEL = 'DISPONIVEL', 'Disponível'
+        RESERVADO = 'RESERVADO', 'Reservado'
         EMPRESTADO = 'EMPRESTADO', 'Emprestado'
 
     livro = models.ForeignKey(
