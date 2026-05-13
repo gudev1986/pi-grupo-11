@@ -19,6 +19,17 @@
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    {% if form_title == 'Livro' and form.current_capa %}
+                    <div class="mb-3">
+                        <span class="form-label d-block">Capa atual</span>
+                        <img
+                            src="{{ form.current_capa.url }}"
+                            alt="Capa atual de {{ form.instance.titulo }}"
+                            class="img-thumbnail"
+                            style="max-width: 220px;"
+                        >
+                    </div>
+                    {% endif %}
                     {% include 'partials/form_fields.html' %}
                     <button type="submit" class="btn btn-primary">Salvar</button>
                     <a href="{{ view.success_url }}" class="btn btn-outline-secondary">Cancelar</a>

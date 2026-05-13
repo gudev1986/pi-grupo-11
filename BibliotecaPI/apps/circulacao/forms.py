@@ -3,10 +3,12 @@ from django.utils import timezone
 
 from apps.acervo.models import Exemplar
 from apps.catalogo.models import Livro
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 
 from .models import Emprestimo, Reserva
 
+User = get_user_model()
 PRAZO_EMPRESTIMO_DIAS = 7
 PRAZO_RESERVA_DIAS = 3
 
@@ -16,11 +18,6 @@ class EmprestimoForm(forms.ModelForm):
     Formulário de empréstimo simplificado.
     A data de devolução é calculada automaticamente como hoje + 7 dias.
     """
-    exemplar = forms.ModelChoiceField(
-        queryset=Exemplar.objects.none(),
-        widget=forms.Select(attrs={'class': 'form-select', 'data-placeholder': 'Selecione um exemplar'})
-    )
-
     class Meta:
         model = Emprestimo
         fields = ['exemplar', 'usuario']
@@ -31,7 +28,7 @@ class EmprestimoForm(forms.ModelForm):
             Exemplar.objects.filter(status=Exemplar.Status.DISPONIVEL)
             .select_related('livro')
         )
-        self.fields['exemplar'].label_from_instance = lambda obj: f"{obj.livro.titulo} - Tombo: {obj.codigo_tombo}"
+        self.fields['usuario'].queryset = User.objects.all()
         for field in self.fields.values():
             if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
                 field.widget.attrs.setdefault('class', 'form-select')

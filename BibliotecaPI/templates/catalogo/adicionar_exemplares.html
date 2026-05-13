@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastrar exemplares | BibliotecaPI{% endblock %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="page-heading">
+        <h1 class="h3 mb-1">Cadastrar exemplares</h1>
+        <p class="text-muted mb-0">{{ livro.titulo }}</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ cancel_url }}">Voltar</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 justify-content-center">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Obra selecionada</strong></div>
+            <div class="card-body">
+                <p><strong>Título:</strong> {{ livro.titulo }}</p>
+                <p><strong>Autores:</strong> {{ livro.autores.all|join:', '|default:'-' }}</p>
+                <p><strong>Categoria:</strong> {{ livro.categoria|default:'-' }}</p>
+                <p><strong>Exemplares atuais:</strong> {{ total_exemplares }}</p>
+                <p class="mb-0"><strong>Editora:</strong> {{ livro.editora|default:'-' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header"><strong>Quantidade a cadastrar</strong></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% include 'partials/form_fields.html' %}
+                    <button type="submit" class="btn btn-primary">Cadastrar exemplares</button>
+                    <a href="{{ cancel_url }}" class="btn btn-outline-secondary">Cancelar</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

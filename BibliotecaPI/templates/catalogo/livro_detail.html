@@ -1,11 +1,11 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Detalhe do livro | BibliotecaPI{% endblock %}
 
 {% block page_header %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="page-heading">
-        <h1 class="h3 mb-1">{{ livro.titulo_completo }}</h1>
+        <h1 class="h3 mb-1">{{ livro.titulo }}</h1>
         <p class="text-muted mb-0">Detalhes bibliográficos e exemplares vinculados.</p>
     </div>
     <a class="btn btn-outline-secondary" href="{% url 'catalogo:livro_list' %}">Voltar</a>
@@ -14,19 +14,37 @@
 
 {% block content %}
 <div class="row g-3">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Capa</strong></div>
             <div class="card-body">
-                <p><strong>ISBN:</strong> {{ livro.isbn }}</p>
-                <p><strong>Ano:</strong> {{ livro.ano_publicacao }}</p>
-                <p><strong>Editora:</strong> {{ livro.editora|default:'-' }}</p>
-                <p><strong>Autores:</strong> {{ livro.autores.all|join:', ' }}</p>
-                <p><strong>Categorias:</strong> {{ livro.categorias.all|join:', '|default:'-' }}</p>
-                <p><strong>Resumo:</strong><br>{{ livro.resumo|default:'Sem resumo cadastrado.' }}</p>
+                {% if livro.capa_imagem %}
+                    <img
+                        src="{{ livro.capa_imagem.url }}"
+                        alt="Capa de {{ livro.titulo }}"
+                        class="img-fluid rounded mx-auto d-block"
+                        style="max-height: 420px;"
+                    >
+                {% else %}
+                    <p class="text-muted mb-0">Nenhuma capa cadastrada para esta obra.</p>
+                {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><strong>Detalhes bibliográficos</strong></div>
+            <div class="card-body">
+                <p><strong>ISBN-10:</strong> {{ livro.isbn_10|default:'-' }}</p>
+                <p><strong>ISBN-13:</strong> {{ livro.isbn_13|default:'-' }}</p>
+                <p><strong>Ano:</strong> {{ livro.ano_publicacao|default:'-' }}</p>
+                <p><strong>Editora:</strong> {{ livro.editora|default:'-' }}</p>
+                <p><strong>Categoria:</strong> {{ livro.categoria|default:'-' }}</p>
+                <p class="mb-0"><strong>Autores:</strong> {{ livro.autores.all|join:', '|default:'-' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3">
         <div class="card shadow-sm">
             <div class="card-header"><strong>Exemplares</strong></div>
             <ul class="list-group list-group-flush">

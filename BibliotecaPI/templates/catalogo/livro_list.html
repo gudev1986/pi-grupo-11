@@ -57,10 +57,7 @@
             <td class="text-end">
                 <a href="{% url 'catalogo:livro_detail' livro.pk %}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
                 {% if is_admin_or_bibliotecario %}
-                    <form method="post" action="{% url 'catalogo:livro_adicionar_exemplar' livro.pk %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-success">Cadastrar Exemplar</button>
-                    </form>
+                    <a href="{% url 'catalogo:livro_adicionar_exemplar' livro.pk %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm btn-outline-success">Cadastrar Exemplares</a>
                     <a href="{% url 'catalogo:livro_update' livro.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                     <a href="{% url 'catalogo:livro_delete' livro.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                 {% endif %}

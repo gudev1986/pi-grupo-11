@@ -10,6 +10,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, ListView
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
 
 from apps.acervo.models import Exemplar
 from apps.catalogo.models import Livro
@@ -24,11 +26,14 @@ from django.db.models import Q
 PRAZO_EMPRESTIMO_DIAS = 7
 PRAZO_RESERVA_DIAS = 3
 
+User = get_user_model()
+
 
 class EmprestimoListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
     model = Emprestimo
     template_name = 'circulacao/emprestimo_list.html'
     context_object_name = 'emprestimos'
+    paginate_by = 20
 
     def get_queryset(self):
         # Atualiza status de empréstimos atrasados
@@ -36,13 +41,26 @@ class EmprestimoListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
             status=Emprestimo.Status.ATIVO,
             data_prevista_devolucao__lt=timezone.localdate(),
         ).update(status=Emprestimo.Status.ATRASADO)
-        return super().get_queryset().select_related('exemplar__livro', 'usuario')
+
+        queryset = super().get_queryset().select_related('exemplar__livro', 'usuario')
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(
+                Q(exemplar__livro__titulo__icontains=q) |
+                Q(exemplar__codigo_tombo__icontains=q)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['q'] = self.request.GET.get('q', '')
+        return context
 
 
 class EmprestimoCreateView(LoginRequiredMixin, AdminRequiredMixin, CreateView):
     model = Emprestimo
     form_class = EmprestimoForm
-    template_name = 'circulacao/form.html'
+    template_name = 'circulacao/emprestimo_form.html'
     success_url = reverse_lazy('circulacao:emprestimo_list')
 
     def get_context_data(self, **kwargs):
@@ -88,31 +106,7 @@ class ReservaCreateView(LoginRequiredMixin, CreateView):
         context['form_title'] = 'Nova Reserva'
         context['prazo_dias'] = PRAZO_RESERVA_DIAS
 
-        busca_form = ReservaBuscaForm(self.request.GET or None)
-        context['busca_form'] = busca_form
-
         return context
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        # Filtra os livros caso haja busca
-        busca_form = ReservaBuscaForm(self.request.GET or None)
-        queryset = Livro.objects.all()
-        if busca_form.is_valid():
-            q = busca_form.cleaned_data.get('q')
-            autor = busca_form.cleaned_data.get('autor')
-            isbn = busca_form.cleaned_data.get('isbn')
-
-            if q:
-                queryset = queryset.filter(titulo__icontains=q)
-            if autor:
-                queryset = queryset.filter(autores__nome__icontains=autor)
-            if isbn:
-                queryset = queryset.filter(
-                    Q(isbn_10__icontains=isbn) | Q(isbn_13__icontains=isbn)
-                )
-        form.fields['livro'].queryset = queryset
-        return form
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
@@ -190,3 +184,71 @@ def renovar_emprestimo(request, pk):
     nova_data = emprestimo.data_prevista_devolucao.strftime('%d/%m/%Y')
     messages.success(request, f'Empréstimo renovado. Nova devolução prevista: {nova_data}.')
     return redirect('circulacao:emprestimo_list')
+
+@login_required
+def api_buscar_livros(request):
+    """API para buscar livros dinamicamente para o Select2."""
+    q = request.GET.get('q', '')
+    livros = Livro.objects.filter(
+        Q(titulo__icontains=q) |
+        Q(autores__nome__icontains=q) |
+        Q(isbn_10__icontains=q) |
+        Q(isbn_13__icontains=q)
+    ).distinct()[:20]
+
+    results = [
+        {
+            'id': livro.id,
+            'text': f"{livro.titulo} (ISBN: {livro.isbn_13 or livro.isbn_10 or '-'})"
+        }
+        for livro in livros
+    ]
+    return JsonResponse({'results': results})
+
+@login_required
+def api_buscar_exemplares(request):
+    """API para buscar exemplares disponíveis para o Select2."""
+    if not user_has_any_role(request.user, [ROLE_ADMIN]):
+        return JsonResponse({'results': []})
+
+    q = request.GET.get('q', '')
+    exemplares = Exemplar.objects.filter(status=Exemplar.Status.DISPONIVEL)
+
+    if q:
+        exemplares = exemplares.filter(
+            Q(livro__titulo__icontains=q) |
+            Q(codigo_tombo__icontains=q)
+        )
+
+    exemplares = exemplares.select_related('livro')[:20]
+    results = [
+        {
+            'id': ex.id,
+            'text': f"Tombo: {ex.codigo_tombo} - {ex.livro.titulo}"
+        }
+        for ex in exemplares
+    ]
+    return JsonResponse({'results': results})
+
+@login_required
+def api_buscar_usuarios(request):
+    """API para buscar usuários para o Select2."""
+    if not user_has_any_role(request.user, [ROLE_ADMIN]):
+        return JsonResponse({'results': []})
+
+    q = request.GET.get('q', '')
+    usuarios = User.objects.filter(
+        Q(username__icontains=q) |
+        Q(first_name__icontains=q) |
+        Q(last_name__icontains=q) |
+        Q(email__icontains=q)
+    )[:20]
+
+    results = [
+        {
+            'id': user.id,
+            'text': f"{user.username} - {user.get_full_name()} ({user.email})"
+        }
+        for user in usuarios
+    ]
+    return JsonResponse({'results': results})

@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}Nova Reserva | BibliotecaPI{% endblock %}
+{% block title %}Novo Empréstimo | BibliotecaPI{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-7">
         <div class="card shadow-sm">
             <div class="card-header bg-secondary text-white">
-                <strong>{{ form_title }}</strong>
+                <strong>{{ form_title|default:"Novo Empréstimo" }}</strong>
             </div>
             <div class="card-body">
                 {% if prazo_dias %}
                 <div class="alert alert-info">
-                    📅 O prazo para retirada após a reserva é de <strong>{{ prazo_dias }} dias</strong>.
+                    📅 O prazo de devolução é fixo em <strong>{{ prazo_dias }} dias</strong> a partir de hoje — a data é calculada automaticamente.
                 </div>
                 {% endif %}
 
@@ -30,10 +30,17 @@
                     {% for field in form %}
                         <div class="mb-3">
                             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {% if field.name == 'livro' %}
-                                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select select2-livros" required>
+
+                            {% if field.name == 'exemplar' %}
+                                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select select2-exemplares" required>
                                     {% if field.value %}
-                                        <option value="{{ field.value }}" selected>{{ field.field.queryset.get.titulo }}</option>
+                                        <option value="{{ field.value }}" selected>{{ field.field.queryset.get.codigo_tombo }} - {{ field.field.queryset.get.livro.titulo }}</option>
+                                    {% endif %}
+                                </select>
+                            {% elif field.name == 'usuario' %}
+                                <select name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-select select2-usuarios" required>
+                                    {% if field.value %}
+                                        <option value="{{ field.value }}" selected>{{ field.field.queryset.get.username }}</option>
                                     {% endif %}
                                 </select>
                             {% else %}
@@ -47,7 +54,7 @@
                         </div>
                     {% endfor %}
 
-                    <button type="submit" class="btn btn-success">Confirmar Reserva</button>
+                    <button type="submit" class="btn btn-primary">Registrar Empréstimo</button>
                     <a href="{{ view.success_url }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
                 </form>
             </div>
@@ -61,24 +68,39 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('.select2-livros').select2({
+        $('.select2-exemplares').select2({
             theme: 'bootstrap-5',
             width: '100%',
-            placeholder: 'Digite título, autor ou ISBN...',
+            placeholder: 'Digite título do livro ou código do tombo...',
             minimumInputLength: 2,
             ajax: {
-                url: '{% url "circulacao:api_buscar_livros" %}',
+                url: '{% url "circulacao:api_buscar_exemplares" %}',
                 dataType: 'json',
                 delay: 250,
                 data: function (params) {
-                    return {
-                        q: params.term, // search term
-                    };
+                    return { q: params.term };
                 },
                 processResults: function (data) {
-                    return {
-                        results: data.results
-                    };
+                    return { results: data.results };
+                },
+                cache: true
+            }
+        });
+
+        $('.select2-usuarios').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Digite nome, username ou e-mail...',
+            minimumInputLength: 2,
+            ajax: {
+                url: '{% url "circulacao:api_buscar_usuarios" %}',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return { q: params.term };
+                },
+                processResults: function (data) {
+                    return { results: data.results };
                 },
                 cache: true
             }

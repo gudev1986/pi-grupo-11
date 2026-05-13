@@ -1,6 +1,6 @@
 ﻿from django import forms
 
-from .models import Autor, Categoria, Editora, Livro
+from .models import Autor, CapaLivro, Categoria, Editora, Livro
 
 
 class BootstrapFormMixin:
@@ -45,6 +45,13 @@ class CategoriaForm(BootstrapFormMixin, forms.ModelForm):
 
 
 class LivroForm(BootstrapFormMixin, forms.ModelForm):
+    capa_imagem = forms.ImageField(
+        required=False,
+        label='Imagem da capa',
+        help_text='Envie a capa do livro para exibição na consulta bibliográfica.',
+        widget=forms.ClearableFileInput(attrs={'accept': 'image/*'}),
+    )
+
     quantidade_exemplares = forms.IntegerField(
         min_value=1,
         initial=1,
@@ -73,6 +80,41 @@ class LivroForm(BootstrapFormMixin, forms.ModelForm):
         self.fields['autores'].queryset = Autor.objects.order_by('nome')
         self.fields['editora'].queryset = Editora.objects.order_by('nome')
         self.fields['categoria'].queryset = Categoria.objects.order_by('nome')
+        self.current_capa = self.instance.capa.imagem if self.instance.pk and hasattr(self.instance, 'capa') else None
+        self.order_fields([
+            'titulo',
+            'isbn_10',
+            'isbn_13',
+            'categoria',
+            'ano_publicacao',
+            'autores',
+            'editora',
+            'capa_imagem',
+            'quantidade_exemplares',
+        ])
+        self._apply_bootstrap()
+
+    def save_capa(self, livro):
+        capa_imagem = self.cleaned_data.get('capa_imagem')
+        if not capa_imagem:
+            return None
+
+        capa, _ = CapaLivro.objects.get_or_create(livro=livro)
+        capa.imagem = capa_imagem
+        capa.save()
+        return capa
+
+
+class AdicionarExemplarForm(BootstrapFormMixin, forms.Form):
+    quantidade = forms.IntegerField(
+        min_value=1,
+        initial=1,
+        label='Quantidade de exemplares',
+        help_text='Informe quantos novos exemplares devem ser vinculados a esta obra.',
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._apply_bootstrap()
 
 
